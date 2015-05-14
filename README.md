@@ -1,117 +1,37 @@
-# Application Title Goes Here
-<!-- If you'd like to use a logo instead uncomment this code and remove the text above this line
+# Set atomic_fetch_xxx functions for ARMv6 ARMv7
 
-  ![Logo](URL to logo img file goes here)
-
--->
-
-By [Author name](author URL goes here).
-
-[![Code Climate](Code Climate Badge IMG URL goes here)](Code Climate URL goes here)
 
 ## Description
-**Application Name Here** description can be listed here.
+New standard C11 has support atomic operations. Atomic operations was supported since version 4.9.x of GCC compiler.
+The project implemented atomic operations such as **atomic_fetch_xxx** (xxx is add, sub, and, or, xor) and **atomic_exchange** for **int** type.
 
-## Installation
-
-Add it to your Gemfile:
-
-```ruby
-gem 'my_example_gem'
-```
-
-Run the following command to install it:
-
-```console
-bundle install
-```
-
-Run the generator:
-
-```console
-rails generate my_example_gem:install
-```
+**You can use this set of functions in old projects that uses previous version of GCC. If transfer of the project to new standard C11 is difficult.**
 
 
+***
+<br/>
+## Warning
+This implementation does not contain memory barriers (DMB - command for ARM). 
+Therefore, there can't be used to implement the synchronization primitives.
+If you using GCC 4.9.0 or higher, use standard atomic operations according of STD C11.
+
+
+##### This implementation supports the following architectures:  **ARMv6, ARMv6J, ARMv6K, ARMv6Z, ARMv6ZK, ARMv7, ARMv7A, ARMv7R**
+
+<br/>
 ## Usage
 
-Usage explanation goes here
+You need to include **atomic_arm.h** file in your **.c** file.
 
-```C++
-static void transfer(int fd)
-{
-	int ret;
-	uint8_t tx[] = {
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x40, 0x00, 0x00, 0x00, 0x00, 0x95,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xDE, 0xAD, 0xBE, 0xEF, 0xBA, 0xAD,
-		0xF0, 0x0D,
-	};
-	uint8_t rx[ARRAY_SIZE(tx)] = {0, };
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx,
-		.rx_buf = (unsigned long)rx,
-		.len = ARRAY_SIZE(tx),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = bits,
-	};
+```c
+#include "atomic_arm.h"    //use our atomic functions
 
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-		pabort("can't send spi message");
-
-	for (ret = 0; ret < ARRAY_SIZE(tx); ret++) {
-		if (!(ret % 6))
-			puts("");
-		printf("%.2X ", rx[ret]);
-	}
-	puts("");
-}
+//Then we can use the atomic functions.
 ```
 
+And add file **atomic_arm.S** to list of source files to compile. (see an example)
 
-## Configuration
-
-This block of text should explain how to configure your application:
-
-`rails generate my_example_gem:install`
-
-
-## Information
-
-Screenshots of your application below:
-
-![Screenshot 1](http://placekitten.com/400/300)
-
-![Screenshot 2](http://placekitten.com/400/300)
-
-
-### Known Issues
-
-If you discover any bugs, feel free to create an issue on GitHub fork and
-send us a pull request.
-
-[Issues List](Github Issues List URL goes here).
-
-## Authors
-
-* Your Name (Your Github URL goes here)
-* Additional Author's name (Their Github URL goes here)
-
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
-
-
+<br/>
 ## License
 
-Your Licensing Information goes here. Example: MIT/X11.
+[BSD](./LICENSE).
