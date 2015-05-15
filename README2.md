@@ -5,7 +5,7 @@
 New standard C11 has support atomic operations. Atomic operations was supported since version 4.9.x of GCC compiler.
 The project implemented atomic operations such as **atomic_fetch_xxx** (xxx is add, sub, and, or, xor) and **atomic_exchange** for **int** type.
 
-**You can use this set of function in old projects that uses previous version of GCC. If transfer of the project to new standard C11 is difficult.**
+**You can use this set of functions in old projects that uses previous version of GCC. If transfer of the project to new standard C11 is difficult.**
 
 
 ***
