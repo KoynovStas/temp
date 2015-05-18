@@ -19,8 +19,8 @@ Variations unit tests in C (for GCC).
 
 **Достоинства:**
 
-    1. Просто и понятно.
-    2. Кроссплатформенность.
+1. Просто и понятно.
+2. Кроссплатформенность.
 
 **Недостатки:**
 
@@ -29,6 +29,9 @@ Variations unit tests in C (for GCC).
 3. Сложность работы в многофайловых проектах.
 
 
+
+***
+<br/>
 ##### Вариант 2 (ld script) [2_ld_script](./2_ld_script/)
 
 **Достоинства:**
@@ -43,6 +46,9 @@ Variations unit tests in C (for GCC).
 3. Сложновато как-то.
 
 
+
+***
+<br/>
 ##### Вариант 3 (использование \_\_attribute\_\_((section ("unit_test"))))  [3_section](./3_section/)
 
 **Достоинства:**
@@ -56,6 +62,9 @@ Variations unit tests in C (for GCC).
 1. Нужна поддержка \_\_attribute\_\_((section ("section_name")))).
 
 
+
+***
+<br/>
 ##### Вариант 4 (использование \_\_attribute\_\_((constructor)  [4_constructor](./4_constructor/)
 
 **Достоинства:**
