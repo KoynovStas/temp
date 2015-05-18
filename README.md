@@ -1,36 +1,69 @@
-# Set atomic_fetch_xxx functions for ARMv6 ARMv7
+# Unit tests in C (variants)
 
 
 ## Description
-New standard C11 has support atomic operations. Atomic operations was supported since version 4.9.x of GCC compiler.
-The project implemented atomic operations such as **atomic_fetch_xxx** (xxx is add, sub, and, or, xor) and **atomic_exchange** for **int** type.
+Variations unit tests in C (for GCC).
 
-**You can use this set of functions in old projects that uses previous version of GCC. If transfer of the project to new standard C11 is difficult.**
+В статье [Авто-регистрация тестов на С средствами языка (Habrahabr)](http://habrahabr.ru/post/252439/) можно видеть как автор взял за основу [seatest](https://code.google.com/p/seatest/):
+
+> Изначально для написания тестов использовался [seatest](https://code.google.com/p/seatest/), в котором устраивало практически всё, но недоставало авто-регистрации. 
+> По результатам вышеописанной деятельности на основе seatest был сделан [stic](https://github.com/xaizek/stic) 
+> (там используется немного C99, но это не является обязательным в общем случае), добавляющий недостающее с точки зрения автора. 
+> Именно там можно посмотреть опущенные здесь детали реализации, а именно в заголовочном файле [stic.h](https://github.com/xaizek/stic/blob/master/src/stic.h). 
+
+Ну да средства языка и все такое. Но список с номерами функций и переменных для каждой возможной строки кода - это всеже ппц. А что если можно использовать еще и средства компилятора (GCC)
+
+### Различные варианты тестов в Си:
+
+##### Вариант 1 (классический массив функций) [1_classic](./1_classic/)
+
+** Достоинства: ** 
+1. Просто и понятно.
+2. Кроссплатформенность.
+
+** Недостатки: ** 
+1. Много кода.
+2. Нет авторегистрации (сами добавляем функции в массив).
+3. Сложность работы в многофайловых проектах.
+
+##### Вариант 2 (ld script) [2_ld_script](./2_ld_script/)
+
+** Достоинства: ** 
+1. Получаем авторегистрацию (просто складываем указатели на тест функции в одну секцию).
+2. Легко работать в многофайловых проектах.
+
+** Недостатки: ** 
+1. Работа с ld скриптами (фу фу фу).
+2. Нет Вы не поняли. ЭТО РАБОТА с ld скриптами. (сложность при кросс-компиляции).
+3. Сложновато как-то.
 
 
+##### Вариант 3 (использование \_\_attribute\_\_((section ("unit_test"))))  [3_section](./3_section/)
+
+** Достоинства: ** 
+1. Получаем авторегистрацию (просто складываем указатели на тест функции в одну секцию).
+2. Легко работать в многофайловых проектах.
+3. Нет работы с ld скриптами (но смысл остался прежним, просто есть волшебная секция).
+
+** Недостатки: ** 
+1. Нужна поддержка \_\_attribute\_\_((section ("section_name")))).
+
+
+##### Вариант 4 (использование \_\_attribute\_\_((constructor)  [4_constructor](./4_constructor/)
+
+** Достоинства: ** 
+1. Получаем авторегистрацию (всю работу делает сам GCC).
+2. Легко работать в многофайловых проектах.
+3. Нет работы с ld скриптами.
+4. Самый минимальный обьем кода.
+
+** Недостатки: ** 
+1. Нужна поддержка \_\_attribute\_\_((constructor).
+
+
+
+<br/>
 ***
-<br/>
-## Warning
-This implementation does not contain memory barriers (DMB - command for ARM). 
-Therefore, there can't be used to implement the synchronization primitives.
-If you using GCC 4.9.0 or higher, use standard atomic operations according of STD C11.
-
-
-##### This implementation supports the following architectures:  **ARMv6, ARMv6J, ARMv6K, ARMv6Z, ARMv6ZK, ARMv7, ARMv7A, ARMv7R**
-
-<br/>
-## Usage
-
-You need to include **atomic_arm.h** file in your **.c** file.
-
-```c
-#include "atomic_arm.h"    //use our atomic functions
-
-//Then we can use the atomic functions.
-```
-
-And add file **atomic_arm.S** to list of source files to compile. (see an example)
-
 <br/>
 ## License
 
