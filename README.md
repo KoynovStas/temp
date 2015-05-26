@@ -1,100 +1,150 @@
-# Unit tests in C (variants)
+# My daemon templates for Linux
 
 
 ## Description
-Variations unit tests in C (for GCC).
 
-В статье [Авто-регистрация тестов на С средствами языка (Habrahabr)](http://habrahabr.ru/post/252439/) можно видеть как автор взял за основу [seatest](https://code.google.com/p/seatest/):
+A **daemon** is a type of program on Unix-like operating systems that runs unobtrusively in the background, 
+rather than under the direct control of a user, waiting to be activated by the occurance of a specific event or condition.
 
-> Изначально для написания тестов использовался [seatest](https://code.google.com/p/seatest/), в котором устраивало практически всё, но недоставало авто-регистрации. 
-> По результатам вышеописанной деятельности на основе seatest был сделан [stic](https://github.com/xaizek/stic) 
-> (там используется немного C99, но это не является обязательным в общем случае), добавляющий недостающее с точки зрения автора. 
-> Именно там можно посмотреть опущенные здесь детали реализации, а именно в заголовочном файле [stic.h](https://github.com/xaizek/stic/blob/master/src/stic.h). 
 
-Ну да средства языка и все такое. Но список с номерами функций и переменных для каждой возможной строки кода - это же ппц. А что если можно использовать еще и средства компилятора (GCC)
+**The standard procedure for daemonize a process has a few steps:**
 
-### Различные варианты тестов в Си:
+  * **Fork**, allowing the parent process to terminate.
+  * Set the umask to zero (reset umask).
+  * Open any logs for writing (optional).
+  * Start a new session for the daemon by calling **setsid()**.
+  * Change the current working directory to a safe location (default: **"/"**).
+  * Redirect **stdin**, **stdout** and **stderr** to /dev/null (not redirect for DEBUG mode).
 
-##### Вариант 1 (классический массив функций) [1_classic](./1_classic/)
 
-**Достоинства:**
 
-1. Просто и понятно.
-2. Кроссплатформенность.
+## Daemon templates for Linux
 
-**Недостатки:**
+##### Template 1 (uses  daemon() function from unistd.h) [template_1](./template_1/)
 
-1. Много кода.
-2. Нет авторегистрации (сами добавляем функции в массив).
-3. Сложность работы в многофайловых проектах.
+**Advantages:**
 
+1. Very simple.
+
+
+**Disadvantages:**
+
+1. DEBUG mode not support.
+2. Don't create a PID file.
+
+
+See man-pages for **daemon()** function: [man 3 daemon()](http://man7.org/linux/man-pages/man3/daemon.3.html)
+
+Implementing function **daemon()** in uClibc: [daemon.c](http://git.uclibc.org/uClibc/tree/libc/unistd/daemon.c)
+
+
+***
+<br/>
+##### Template 2 (use our daemonize() function) [template_2](./template_2/)
+
+**Advantages:**
+
+1. Full control (DEBUG mode).
+2. Create a PID file.
+
+
+**Disadvantages:**
+
+1. Many code.
+
+
+***
+<br/>
+##### Template 3 (use our daemonize() function) [template_3](./template_3/)
+
+It's template 2 + Processing the command line by using the function getopt_long
 
 
 
 ***
 <br/>
-##### Вариант 2 (ld script) [2_ld_script](./2_ld_script/)
+##### Template 4 (use our daemonize() function) [template_4](./template_4/)
 
-**Достоинства:**
-
-1. Получаем авторегистрацию (просто складываем указатели на тест функции в одну секцию).
-2. Легко работать в многофайловых проектах.
-
-**Недостатки:**
-
-1. Работа с ld скриптами (фу фу фу).
-2. Нет Вы не поняли. ЭТО РАБОТА с ld скриптами. (сложность при кросс-компиляции).
-3. Сложновато как-то.
+It's template 3 + DAEMON\_PIPE\_CMD (Management daemon via a control pipe using the function getopt_long)
 
 
-Для получения ld скрипта можно выполнить следующую команду:
+<br/>
+## Testing
+
+
+
+##### Check that the daemon has no controlling terminal and is not a session leader
+
+The controlling terminal and session ID of a process can be inspected using the ps command:
+
 ```console
-ld -verbose
-
+ps -o pid,sid,tty,cmd -C name_daemon
 ```
 
 
-Или через GCC:
-```console
-gcc -m32 -Xlinker -verbose
+This should output a table of the form:
 
+```console
+PID   SID   TT       CMD
+29964 29961  ?      ./name_daemon
 ```
 
 
+
+##### Check the current working directory
+
+Obtain the working directory pathname from /proc:
+
+```console
+ls -l /proc/PID_DAEMON/cwd
+```
+
+
+The working directory of the process is the target of the softlink:
+
+```console
+lrwxrwxrwx 1 root root 0 Feb  6 15:57 cwd -> /
+```
+
+
+
+#####  Check file descriptors
+
+The file descriptors of a running process can be inspected by looking in /proc:
+
+```console
+ls -l /proc/PID_DAEMON/fd
+```
+
+
+Each open descriptor is presented as a softlink. 
+If a descriptor is associated with a filesystem object then the target of the softlink is the pathname of the object. 
+For a daemon the output would typically be similar to:
+
+```console
+lrwx------ 1 root root 64 2011-02-08 06:40 0 -> /dev/null
+lrwx------ 1 root root 64 2011-02-08 06:40 1 -> /dev/null
+lrwx------ 1 root root 64 2011-02-08 06:40 2 -> /dev/null
+```
+
+
+
 ***
 <br/>
-##### Вариант 3 (использование \_\_attribute\_\_((section ("unit_test"))))  [3_section](./3_section/)
+## Usage
 
-**Достоинства:**
+**To start working, perform the following steps:**
 
-1. Получаем авторегистрацию (просто складываем указатели на тест функции в одну секцию).
-2. Легко работать в многофайловых проектах.
-3. Нет работы с ld скриптами (но смысл остался прежним, просто есть волшебная секция).
-
-**Недостатки:**
-
-1. Нужна поддержка \_\_attribute\_\_((section ("section_name")))).
-
-
-
-***
-<br/>
-##### Вариант 4 (использование \_\_attribute\_\_((constructor)  [4_constructor](./4_constructor/)
-
-**Достоинства:**
-
-1. Получаем авторегистрацию (всю работу делает сам GCC).
-2. Легко работать в многофайловых проектах.
-3. Нет работы с ld скриптами.
-4. Самый минимальный объем кода.
-
-**Недостатки:**
-
-1. Нужна поддержка \_\_attribute\_\_((constructor).
+* Choose the appropriate template.
+* Fix DAEMON_XXX variables in the Makefile.
+* Choose your compiler (or toolchain) in the Makefile (see variable $GCC).
+* Add your code in main loop and your source files in the project.
+* Achieve a clean build of the project (the complete absence of errors and warnings when you build the project).
+* Perform testing demon.
+* If you are using embedded Linux you can use the template start script [S90DaemonName](./S90DaemonName).
 
 
 
-<br/>
 ***
 <br/>
 ## License
