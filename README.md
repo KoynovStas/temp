@@ -1,23 +1,32 @@
-# My daemon templates for Linux
+# Linux_GPIO is C++ class to work with GPIO in Linux over the filesystem
 
 
 ## Description
 
-A **daemon** is a type of program on Unix-like operating systems that runs unobtrusively in the background, 
-rather than under the direct control of a user, waiting to be activated by the occurance of a specific event or condition.
+Linux_GPIO is C++ class to work with GPIO in Linux over the filesystem.
 
 
-**The standard procedure for daemonize a process has a few steps:**
+**The class has the following public methods:**
+```C++
+int  dev_open(unsigned int num_pin, GPIO_Direction direction);
+void dev_close(void);
 
-  * **Fork**, allowing the parent process to terminate.
-  * Set the umask to zero (reset umask).
-  * Open any logs for writing (optional).
-  * Start a new session for the daemon by calling **setsid()**.
-  * Change the current working directory to a safe location (default: **"/"**).
-  * Redirect **stdin**, **stdout** and **stderr** to /dev/null (not redirect for DEBUG mode).
+int  get_value(void);
+int  up(void);
+int  down(void);
+
+unsigned int   get_num_pin(void){ return _num_pin; }
+GPIO_Direction get_direction(void){ return _direction; }
+
+GPIO_Error get_errno(void){ return _errno; }
+
+static const char* strerror(GPIO_Error error);
+```
 
 
 
+***
+<br/>
 ## Daemon templates for Linux
 
 ##### Template 1 (uses  daemon() function from unistd.h) [template_1](./template_1/)
@@ -53,11 +62,12 @@ Implementing function **daemon()** in uClibc: [daemon.c](http://git.uclibc.org/u
 1. Many code.
 
 
+
 ***
 <br/>
 ##### Template 3 (use our daemonize() function) [template_3](./template_3/)
 
-It's template 2 + Processing the command line by using the function getopt_long
+It's template 2 + function init_signals + daemon_exit_handler
 
 
 
@@ -65,7 +75,16 @@ It's template 2 + Processing the command line by using the function getopt_long
 <br/>
 ##### Template 4 (use our daemonize() function) [template_4](./template_4/)
 
-It's template 3 + DAEMON\_PIPE\_CMD (Management daemon via a control pipe using the function getopt_long)
+It's template 3 + Processing the command line by using the function getopt_long
+
+
+
+***
+<br/>
+##### Template 5 (use our daemonize() function) [template_5](./template_5/)
+
+It's template 4 + DAEMON_CMD_PIPE (Management daemon via a control pipe using the function getopt_long)
+
 
 
 <br/>
@@ -78,16 +97,41 @@ It's template 3 + DAEMON\_PIPE\_CMD (Management daemon via a control pipe using 
 The controlling terminal and session ID of a process can be inspected using the ps command:
 
 ```console
-ps -o pid,sid,tty,cmd -C name_daemon
+ps -o ppid,pid,sid,tty,cmd -C name_daemon
 ```
 
 
 This should output a table of the form:
 
 ```console
-PID   SID   TT       CMD
-29964 29961  ?      ./name_daemon
+PPID   PID    SID    TT       CMD
+2173   29964  29961  ?        ./name_daemon
 ```
+
+
+#### Note:
+
+
+>**Why has my process PPID is not 1?**
+How can I execute a new process from GNOME Terminal so that the child process's parent PID becomes 1 and not the PID of the ubuntu session init process?
+
+**Answers:**
+
+>**This is intentionally hard**. Service managers want to keep track of orphaned child processes.
+They want not to lose them to process #1. Stop trying to do that.
+If you are asking solely because you think that your process ought to have a parent process ID of 1,
+then wean yourself off this idea.
+[see more](http://unix.stackexchange.com/questions/194182/orphan-processs-parent-id-is-not-1-when-parent-process-executed-from-gnome-term)
+
+
+>There is no way to discern a regular process from a daemon process.
+A daemon can be started from anywhere, not just init.
+It is not necessary to double fork and detach from the terminal to be considered a daemon.
+On GNOME systems, gnome-settings-daemon keeps its parent, logs to the parent's terminal,
+and does not have PPID == 1 as its parent PID, yet it is still considered a daemon.
+A daemon is simply a continuously running process.
+They are, therefore, impossible to identify with one command.
+[see more](http://unix.stackexchange.com/questions/159964/how-to-check-whether-a-process-is-daemon-or-not)
 
 
 
