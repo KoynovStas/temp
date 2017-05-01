@@ -14,6 +14,11 @@ This class provides the opportunity to work with the library [(libmodbus ver 3.1
 <img src="./screenshots/Text_tab.png" width="100" align="center">
 
 
+![Main](./screenshots/animation.gif)
+
+
+<img src="./screenshots/animation.gif" width="694" align="center">
+
 ***
 <br/>
 ## License
