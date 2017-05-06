@@ -23,6 +23,8 @@ This class provides the opportunity to work with the library [(libmodbus ver 3.1
 </p>
 
 
+#59a93cb4c8
+
 ***
 <br/>
 ## License
