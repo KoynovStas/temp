@@ -23,7 +23,9 @@ This class provides the opportunity to work with the library [(libmodbus ver 3.1
 </p>
 
 
-#59a93cb4c8
+
+[asd](commit/8ae92ba7bbb4842c90a2a3a8c440f4d9354c0ac9)
+
 
 ***
 <br/>
