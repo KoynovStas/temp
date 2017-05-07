@@ -12,8 +12,8 @@
 
 ### What's New
 
-	- New GUI uses QML and Controls 2.0
-	- Since version 2.0 Windows XP is not supported
+ - New GUI uses QML and Controls 2.0
+ - Since version 2.0 Windows XP is not supported
 
 	
 ### Added
