@@ -1,3 +1,5 @@
+![Version](https://img.shields.io/github/release/KoynovStas/QCRC_Calc.svg?style=plastic)
+
 # QModBus is wrapper over libmodbus for Qt
 
 
